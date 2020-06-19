@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Bearer Token Authentication</title>
+    <style>
+        html {
+            font-size: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.7;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Bearer Token Authentication</h1>
+    <p>When working with tokens, like JWT, you need to send the token to the web server along with each HTTP Request.
+    </p>
+    <p><button id="btnFetch">Click to send a Log in</button></p>
+    <p><button id="btn1Fetch">Click to send a Notes</button></p>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('btnFetch').addEventListener('click', sendReqToLogIn);
+	    document.getElementById('btn1Fetch').addEventListener('click', sendReq);
+            //pretend to get a token after logging in
+            
+        });
+
+        let sendReq = (ev) => {
+            let url = 'http://localhost:3000/api/notes/';
+            let token = JSON.parse(sessionStorage.getItem('MyUniqueUserToken'));
+
+            let h = new Headers();
+            h.append('auth-token', `${token}`);
+
+            let req = new Request(url, {
+                method: 'GET',
+                mode: 'cors',
+                headers: h
+		
+            });
+            fetch(req)
+                .then(resp => resp.json())
+                .then(data => {
+                    console.log(data);
+                })
+                .catch(err => {
+                    console.error(err.message);
+                })
+        }
+	
+	let sendReqToLogIn = (ev) => {
+            let url = 'http://localhost:3000/api/user/login';
+	    let h = new Headers();
+            h.append('Content-Type', 'application/json');
+            let req = new Request(url, {
+                method: 'POST',
+                mode: 'cors',
+		headers: h,
+		body: '{"email": "gameportaldan@gmail.com", "password": "123123123"}'
+            });
+            fetch(req)
+                .then(resp => resp.json())
+                .then(data => {
+		    console.log(data['message']);
+		    sessionStorage.setItem('MyUniqueUserToken', JSON.stringify(data['message'])
+            );
+		    token = data['message'];
+                })
+                .catch(err => {
+                    console.error(err.message);
+                })
+        }
+    </script>
+</body>
+
+</html>

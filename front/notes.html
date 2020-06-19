@@ -1,0 +1,157 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="index.css">
+    <title>Log in</title>
+</head>
+
+<body>
+    <nav class="blue darken-4">
+        <div class="nav-wrapper">
+            <a href="notes.html" class="brand-logo">Todos</a>
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+                <li class="active"><a href="notes.html">Todos</a></li>
+                <li><a href="index.html">Log in</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container" id="container">
+            <h2>Create todo</h2>
+
+            <div class="input-field">
+                <input type="text" name="title" id="title" onchange="myFunc(this);">
+                <label>Todo title</label>
+            </div>
+
+            <button type="submit" class="btn" id="btn">Create</button>
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    document.getElementById('btn').addEventListener('click', sendReq);
+                    document.getElementById('btn').addEventListener('click', sendReqToCreateNote);
+                });
+
+                let token = JSON.parse(sessionStorage.getItem('MyUniqueUserToken'));
+                var title = document.getElementById("title").value;
+                let ans = [];
+                let sendReqToCreateNote = (ev) => {
+                    let url = 'http://localhost:3000/api/notes';
+                    let h = new Headers();
+                    h.append('Content-Type', 'application/json');
+                    h.append('auth-token', `${token}`);
+                    let req = new Request(url, {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: h,
+                        body: `{"title": "${title}"}`
+                    });
+                    fetch(req)
+                        .then(resp => resp.json())
+                        .then(data => {
+                            window.location.reload(true);
+                        })
+                        .catch(err => {
+                            console.error(err.message);
+                        })
+                }
+
+                let sendReq = (ev) => {
+                    let url = 'http://localhost:3000/api/notes/';
+                    let token = JSON.parse(sessionStorage.getItem('MyUniqueUserToken'));
+                    let h = new Headers();
+                    h.append('auth-token', `${token}`);
+
+                    let req = new Request(url, {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: h
+
+                    });
+                    fetch(req)
+                        .then(resp => resp.json())
+                        .then(data => {
+                            console.log(data);
+                            localStorage.setItem('Notes', JSON.stringify(data));
+                        })
+                        .catch(err => {
+                            console.error(err.message);
+                        })
+                }
+
+                sendReq();
+
+                function myFunc(o) {
+                    title = o.value;
+                }
+
+            </script>
+        <h2>Todos page</h2>
+        <script>
+            
+            let notes = JSON.parse(localStorage.getItem('Notes'));
+                if (notes == []) {
+                    notes = null;
+                }
+                if (notes != null) {
+
+                    if (notes.length) {
+                        document.write('<ul>');
+                        for (var i = notes.length - 1; i >= 0; i--) {
+                            document.write('<li class="todo">');
+                            document.write('<div class="row">');
+                            document.write('<label>');
+                            document.write('<div class="col s8">');
+                            if (notes[i].isDone) {
+                                document.write(`<input type="checkbox" onclick="isChecked('${notes[i]._id}', '${notes[i].title}', ${notes[i].isDone})" checked name="isDone">`);
+                                document.write(`<span class="completed">${notes[i].title}</span>`);
+                            }
+                            else {
+                                document.write(`<input type="checkbox" onclick="isChecked('${notes[i]._id}', '${notes[i].title}',  ${notes[i].isDone})" name="isDone">`);
+                                document.write(`<span>${notes[i].title}</span>`);
+                            }
+                            document.write(`<input type="hidden" value="${notes[i]._id}" name="id">`);
+                            document.write('</div>');
+                            document.write('<div class="col s4 center">');
+                            document.write('<button class="btn btn-small center" type="submit">Edit</button>');
+                            document.write('<button class="btn btn-small right" type="submit">Delete</button>');
+                            document.write('</div></label></div></li>');
+                        }
+                        document.write('</ul>');
+                    }
+
+                }
+                else {
+                    document.write('<p>No todos!</p>');
+            }
+
+            function isChecked(id,title,isDone) {
+                let token = JSON.parse(sessionStorage.getItem('MyUniqueUserToken'));
+                let url = `http://localhost:3000/api/notes/${id}`;
+                let h = new Headers();
+                h.append('Content-Type', 'application/json');
+                h.append('auth-token', `${token}`);
+                let req = new Request(url, {
+                    method: 'PATCH',
+                    mode: 'cors',
+                    headers: h,
+                    body: `{"title": "${title}", "isDone": "${!isDone}"}`
+                })
+                fetch(req)
+                    .then(resp => resp.json())
+                    .then(data => {
+                        location.replace('notes.html');
+                    })
+                    .catch(err => {
+                        console.error(err.message);
+                    })
+                sendReq();
+            }
+        </script>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+</body>
+</html>

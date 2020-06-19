@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta http-equiv="Content-Type" content="application/json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="index.css">
+    <title>Log in</title>
+</head>
+
+<body>
+    <nav class="blue darken-4">
+        <div class="nav-wrapper">
+            <a href="notes.html" class="brand-logo">Todos</a>
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+                <li class="active"><a href="index.html">Log in</a></li>
+                <li><a href="register.html">Register</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        
+            <h2>Log in</h2>
+
+            <div class="input-field">
+                <input type="text" name="email" id="email" onchange="myFunc(this);">
+                <label>Email</label>
+            </div>
+            <div class="input-field">
+                <input type="password" name="password" id="password" onchange="myFunc1(this);">
+                <label>Password</label>
+            </div>
+
+            <button type ="submit" class="btn" id="btn">Log in</button>
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    document.getElementById('btn').addEventListener('click', sendReqToLogIn);
+                });
+
+                var email = document.getElementById("email").value;
+                var password = document.getElementById("password").value;
+                let sendReqToLogIn = (ev) => {
+                    let url = 'http://localhost:3000/api/user/login';
+                    let h = new Headers();
+                    h.append('Content-Type', 'application/json');
+                    let req = new Request(url, {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: h,
+                        body: `{"email": "${email}", "password": "${password}"}`
+                    });
+                    fetch(req)
+                        .then(resp => resp.json())
+                        .then(data => {
+                            console.log(data['message']);
+                            sessionStorage.setItem('MyUniqueUserToken', JSON.stringify(data['message'])
+                            );
+                            token = data['message'];
+                            location.replace("notes.html")
+                        })
+                        .catch(err => {
+                            console.error(err.message);
+                        })
+                }
+
+                function myFunc(o) {
+                    email = o.value;
+                }
+
+                function myFunc1(o) {
+                    password = o.value;
+                }
+            </script>
+    </div>
+</body>
+
+</html>
